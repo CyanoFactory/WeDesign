@@ -1,3 +1,10 @@
+/*
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+*/
+
 export namespace DesignUtils {
     export function downloadSVG(svg_element: Node, filename: string): void {
         const s = new XMLSerializer().serializeToString(svg_element);

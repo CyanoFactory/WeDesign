@@ -118,11 +118,8 @@ def get_revisions(request, pk):
 
     prev_id = None
     for rev in revision:
-        # For historical reasons changes also contains an extra key objectives
-        if "changes" in rev["changes"]:
-            rev["changes"] = rev["changes"]["changes"]
-        else:
-            rev["changes"] = []
+        if rev["changes"]:
+            rev["changes"] = json.loads(rev["changes"])
         prev_id, rev["id"] = rev["id"], prev_id
         rev["date"] = str(rev["date"])
 
@@ -162,7 +159,9 @@ def export(request, pk):
 
         export_data = out.getvalue()
     elif form == "json":
-        export_data = json.dumps(content, indent='\t')
+        export_data = json.dumps(json.loads(content), indent='\t')
+    else:
+        raise BadRequest("Bad format")
 
     types = dict(
         bioopt="application/x-bioopt",
@@ -252,8 +251,8 @@ def save(request, pk):
 
     rev = Revision(
         model=model,
-        sbml=json.dumps(org.to_json()),
-        changes=dict(changes=changes),
+        sbml=org.to_json(),
+        changes=json.dumps(changes),
         reason=summary
     )
 
@@ -381,7 +380,7 @@ def upload(request):
 
                 Revision(
                     model=dm,
-                    sbml=json.dumps(model.to_json()),
+                    sbml=model.to_json(),
                     reason="Initial version"
                 ).save()
 
@@ -457,7 +456,7 @@ def upload(request):
 
                 Revision(
                     model=dm,
-                    sbml=json.dumps(model.to_json()),
+                    sbml=model.to_json(),
                     reason="Initial version"
                 ).save()
 
@@ -490,9 +489,10 @@ def history(request, pk):
         v = list(v)[::-1]
         for vv in v:
             try:
-                vv.changes = json.dumps(vv.changes["changes"])
+                if vv.changes:
+                    vv.changes = json.loads(vv.changes)
             except KeyError:
-                vv.changes = json.dumps({})
+                vv.changes = {}
 
         entries.append([k, list(v)[::-1]])
 

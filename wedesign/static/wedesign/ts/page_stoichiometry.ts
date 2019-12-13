@@ -1,3 +1,10 @@
+/*
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+*/
+
 import * as app from "./app"
 import * as mm from "./metabolic_model";
 import * as $ from "jquery";

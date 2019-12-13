@@ -1,3 +1,10 @@
+{% comment %}
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+{% endcomment %}
+
 <div {% if fieldset.css_id %}id="{{ fieldset.css_id }}"{% endif %} {{ fieldset.flat_attrs|safe }} class="panel panel-default">
     <div class="panel-heading">
         <h3 class="panel-title">{{ legend|safe }}</h3>
