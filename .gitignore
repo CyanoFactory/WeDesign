@@ -1,0 +1,6 @@
+.idea/
+settings_private.py
+__pycache__/
+*.sqlite*
+*.d.ts
+*.map
