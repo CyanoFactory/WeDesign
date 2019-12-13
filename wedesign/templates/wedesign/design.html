@@ -13,13 +13,15 @@ Released under the MIT license
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
-{% block head_title %}{{ block.super }} :: WeDesign{% endblock %}
-{% block page_title %}WeDesign &ndash; {{ name }}{% endblock %}
-{% block head %}
-{{ block.super }}
-<script src="{% get_static_prefix %}wedesign/js/d3.v3.js"></script>
-<link href="{% get_static_prefix %}wedesign/css/c3.css" rel="stylesheet" type="text/css">
-<script src="{% get_static_prefix %}wedesign/js/c3.js"></script>
+{% block title %}WeDesign{% endblock %}
+{% block content_title %}WeDesign :: {{ name }}{% endblock %}
+
+{% block extra_head %}
+{% include "wedesign/base_head.html" %}
+
+<script src="{% get_static_prefix %}wedesign/externals/js/d3.v3.js"></script>
+<link href="{% get_static_prefix %}wedesign/externals/css/c3.css" rel="stylesheet" type="text/css">
+<script src="{% get_static_prefix %}wedesign/externals/js/c3.js"></script>
 <script src="{% get_static_prefix %}wedesign/js/viz.js"></script>
 <script type="text/javascript" src="{% get_static_prefix %}wedesign/externals/js/svg-pan-zoom.js"></script>
 <script src="{% get_static_prefix %}wedesign/node_modules/requirejs/require.js"

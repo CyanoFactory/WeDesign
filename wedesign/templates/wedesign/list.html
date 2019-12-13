@@ -10,12 +10,11 @@ Released under the MIT license
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block head_title %}{{ block.super }} :: WeDesign{% endblock %}
-{% block page_title %}WeDesign{% endblock %}
+{% block title %}WeDesign{% endblock %}
+{% block content_title %}WeDesign{% endblock %}
 
-{% block head %}
-{{ block.super }}
-
+{% block extra_head %}
+{% include "wedesign/base_head.html" %}
 <script>
 $(document).ready(function() {
     $(function () {

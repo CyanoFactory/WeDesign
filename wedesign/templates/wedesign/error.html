@@ -7,7 +7,10 @@ Hochschule Mittweida, University of Applied Sciences
 Released under the MIT license
 {% endcomment %}
 
-{% block extrastyles %}
+{% block extra_head %}
+{% include "wedesign/base_head.html" %}
+
+<style>
 #error{
 	width:100%;
 	margin:0px;
@@ -42,9 +45,7 @@ Released under the MIT license
 		font-style:normal;
 	}
 }
-{% endblock %}
-
-{% block action_icons_share %}
+</style>
 {% endblock %}
 
 {% block content %}

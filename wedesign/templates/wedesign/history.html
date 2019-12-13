@@ -9,11 +9,11 @@ Released under the MIT license
 
 {% load static %}
 
-{% block head_title %}{{ block.super }} :: {{ model.name }}{% endblock %}
-{% block page_title %}History of {{ model.name }}{% endblock %}
+{% block title %}WeDesign{% endblock %}
+{% block content_title %}History of {{ model.name }}{% endblock %}
 
-{% block head %}
-{{ block.super }}
+{% block extra_head %}
+{% include "wedesign/base_head.html" %}
 
 <script type="text/javascript">
     "use strict";
