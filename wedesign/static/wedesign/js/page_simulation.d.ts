@@ -1,0 +1,35 @@
+import * as app from "./app";
+import * as mm from "./metabolic_model";
+import "datatables.net";
+export declare class Page {
+    readonly app: app.AppManager;
+    readonly datatable_flux: DataTables.Api;
+    readonly source_element: HTMLElement;
+    readonly simulation_result_element: HTMLElement;
+    readonly visual_graph_element: HTMLElement;
+    readonly visual_fba_element: HTMLElement;
+    readonly table_element_flux: HTMLElement;
+    readonly export_button_graph: HTMLElement;
+    readonly export_button_chart: HTMLElement;
+    readonly export_button_flux: HTMLElement;
+    last_sim_type: string;
+    last_sim_flux: number;
+    last_sim_objective: mm.Reaction;
+    last_sim_design_objecive: mm.Reaction;
+    last_dot_graph: string;
+    last_target_obj_results: any[];
+    simulation_chart: any;
+    is_dragging: boolean;
+    constructor(where: HTMLElement, app: app.AppManager);
+    init(): void;
+    updateLabels(): void;
+    notifyInfo(text: string): void;
+    notifyWarning(text: string): void;
+    notifyError(text: string): void;
+    simulate(): void;
+    solve(): void;
+    design_fba(): void;
+    target_fba(): void;
+    createCsv(): string;
+    createGraph(flux: any[]): string;
+}

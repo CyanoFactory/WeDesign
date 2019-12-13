@@ -1,0 +1,271 @@
+{% extends "wedesign/base.html" %}
+
+{% comment %}
+Basket overview page template
+
+Copyright (c) 2013 Gabriel Kind <gkind@hs-mittweida.de>
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+{% endcomment %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}{{ block.super }} :: WeDesign{% endblock %}
+{% block page_title %}WeDesign{% endblock %}
+
+{% block head %}
+{{ block.super }}
+
+<script>
+$(document).ready(function() {
+    $(function () {
+        var dialog_delete = $("#dialog-delete");
+
+        var table = $('#new_list').DataTable({
+            "language": {
+                "emptyTable": "You don't have any models. Please create one."
+            },
+            columnDefs: [
+                {
+                    "targets": 0,
+                    "createdCell": function (td, cellData, rowData, row, col) {
+                        $(td).wrapInner($("<a></a>").attr("href", $($(td).parent()).data("url")));
+                    }
+                },
+                {
+                    "targets": 1,
+                    "searchable": false,
+                    "orderable": false
+                }
+            ]
+        });
+
+        $(".delete-button").click(function() {
+            var parent = $(this).parents("tr");
+
+            dialog_delete.data("parent", parent);
+            dialog_delete.data("pk", parent.data("pk"));
+            dialog_delete.modal('show');
+        });
+
+        $("#dialog-create").on("click", ".btn-primary", function () {
+            var form = $("#dialog-create").find("form");
+
+            $.ajax({
+                url: "{% url 'wedesign:upload' %}",
+                type: "POST",
+                data: new FormData(form[0]),
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    if (!(data['success'])) {
+                        form.replaceWith(data['form_html']);
+                    }
+                    else {
+                        location.reload();
+                    }
+                },
+                beforeSend: function() {
+                    waitIndicator.show($("#dialog-create").find(".modal-content"));
+                },
+                complete: function() {
+                    waitIndicator.hide($("#dialog-create").find(".modal-content"));
+                }
+            });
+        });
+
+        $("#dialog-template").on("click", ".btn-primary", function () {
+            var form = $("#dialog-template").find("form");
+
+            $.ajax({
+                url: "{% url 'wedesign:upload' %}",
+                type: "POST",
+                data: new FormData(form[0]),
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    if (!(data['success'])) {
+                        form.replaceWith(data['form_html']);
+                    }
+                    else {
+                        location.reload();
+                    }
+                },
+                beforeSend: function() {
+                    waitIndicator.show($("#dialog-create").find(".modal-content"));
+                },
+                complete: function() {
+                    waitIndicator.hide($("#dialog-create").find(".modal-content"));
+                }
+            });
+        });
+
+        $("#dialog-bigg").on("click", ".btn-primary", function () {
+            var form = $("#dialog-bigg").find("form");
+
+            $.ajax({
+                url: "{% url 'wedesign:upload' %}",
+                type: "POST",
+                data: new FormData(form[0]),
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    if (!(data['success'])) {
+                        form.replaceWith(data['form_html']);
+                    }
+                    else {
+                        location.reload();
+                    }
+                },
+                beforeSend: function() {
+                    waitIndicator.show($("#dialog-bigg").find(".modal-content"));
+                },
+                complete: function() {
+                    waitIndicator.hide($("#dialog-bigg").find(".modal-content"));
+                }
+            });
+        });
+
+        $("#dialog-delete .btn-primary").click(function () {
+            $.ajax({
+                type: "POST",
+                url: dialog_delete.data("parent").data("delete-url"),
+                context: document.body,
+                data: { "model_id": dialog_delete.data("pk") }
+            });
+
+            dialog_delete.modal("hide");
+
+            dialog_delete.data("parent").fadeOut(200, function() { table.row(this).remove().draw(); });
+        });
+
+        $("#create-bigg").one("click", () => {
+            $.ajax({
+                // Initially this linked to bigg directly but they do not provide HTTPS connections -_-
+                url: "{% get_static_prefix %}wedesign/bigg.json"
+            }).done((result) => {
+                const select = $("#dialog-bigg").find("select");
+                result["results"].sort(function(a,b) {
+                    return a["organism"].localeCompare(b["organism"]);
+                });
+                for (const elem of result["results"]) {
+                    select.append(($('<option>', {
+                        value: elem["bigg_id"],
+                        text: elem["organism"] + " (" + elem["bigg_id"] + ")"
+                    })));
+                }
+            });
+        });
+    });
+});
+</script>
+
+{% endblock %}
+
+{% block content %}
+{% if not request.user.is_authenticated %}
+<div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+        <span class="sr-only">Info:</span>You are not logged in. Making permanent changes to models or uploading new ones is disabled.</div>
+</div>
+{% endif %}
+
+<table id="new_list" class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for object in queryset %}
+        <tr data-pk="{{ object.pk }}" data-url="{{ object.model_url }}" data-delete-url="{{ object.delete_url }}">
+            <th>{{ object.name }}</th>
+            <td>
+                <div class="btn-group" role="group">
+                <a class='btn btn-default btn-xs' href="{% url "wedesign:history" pk=object.pk %}">View revisions</a>
+                <div class="btn-group" role="group">
+                    <a class='btn btn-default btn-xs dropdown-toggle' data-toggle="dropdown" aria-expanded="false">
+                        Export model <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                    <li><a id="export-sbml" href="{% url "wedesign:export" pk=object.pk %}?format=sbml">As SBML file</a></li>
+                    <li><a id="export-sbml-wedesign" href="{% url "wedesign:export" pk=object.pk %}?format=sbml_wedesign">As SBML file with WeDesign extension</a></li>
+                    <li><a id="export-bioopt" href="{% url "wedesign:export" pk=object.pk %}?format=bioopt">As BioOpt file</a></li>
+                    <li><a id="export-json" href="{% url "wedesign:export" pk=object.pk %}?format=json">As WeDesign JSON file (only for developers)</a></li>
+                    </ul>
+                </div>
+                {% if request.user.is_authenticated %}
+                <a class='btn btn-default btn-xs delete-button' href="#">Delete model</a>
+                {% endif %}
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- Button trigger modal -->
+{% if request.user.is_authenticated %}
+<div id="model-create-button" class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+    Create new model <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+    <li><a id="create-model" href="#" data-toggle="modal" data-target="#dialog-create">Upload your own model</a></li>
+    <li><a id="create-template" href="#" data-toggle="modal" data-target="#dialog-template">Create from template</a></li>
+    <li><a id="create-bigg" href="#" data-toggle="modal" data-target="#dialog-bigg">Create from BiGG model</a></li>
+    </ul>
+</div>
+{% endif %}
+
+<!-- Modal -->
+<div class="modal fade" id="dialog-create" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            {% crispy upload_form %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="dialog-template" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            {% crispy template_form %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="dialog-bigg" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            {% crispy bigg_form %}
+        </div>
+    </div>
+</div>
+
+<form method="post">
+<div class="modal fade" id="dialog-delete" tabindex="-1" role="dialog" aria-labelledby="dialog-delete-label"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="dialog-delete-label">Delete model</h4>
+            </div>
+            <div class="modal-body">
+                Do you really want to delete the model?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-danger">Delete</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "amd",
+        "declaration": true,
+        "outDir": "../js",
+        "strict": false,
+        "moduleResolution": "Node",
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+            ]
+        }
+    }
+}
