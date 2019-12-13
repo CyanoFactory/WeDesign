@@ -5,7 +5,7 @@ Hochschule Mittweida, University of Applied Sciences
 Released under the MIT license
 """
 
-from metabolic_model import metabolic_model
+from .metabolic_model import metabolic_model
 
 def verify_object(obj, command):
     if "id" not in obj:

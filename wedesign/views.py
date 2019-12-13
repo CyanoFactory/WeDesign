@@ -19,10 +19,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from jsonview.decorators import json_view
 from jsonview.exceptions import BadRequest
 
-from metabolic_model import metabolic_model
-from metabolic_model import sbml_parser
-from metabolic_model.optgene import OptGeneParser
-from metabolic_model.sbml_xml_generator import SbmlXMLGenerator, SbmlXMLGeneratorWithWeDesign
+from .metabolic_model import metabolic_model
+from .metabolic_model import sbml_parser
+from .metabolic_model.optgene import OptGeneParser
+from .metabolic_model.sbml_xml_generator import SbmlXMLGenerator, SbmlXMLGeneratorWithWeDesign
 from .command_list import apply_commandlist
 from .decorators import ajax_required
 from .forms import UploadModelForm, ModelFromTemplateForm, SaveModelAsForm, SaveModelForm, ModelFromBiGGForm

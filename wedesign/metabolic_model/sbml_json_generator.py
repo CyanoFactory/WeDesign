@@ -6,7 +6,8 @@ Released under the MIT license
 """
 
 import json
-import metabolic_model.metabolic_model as metabolic_model
+
+from ..metabolic_model import metabolic_model
 
 class SbmlJsonGenerator(json.JSONEncoder):
     element_filter = ["rdf:RDF", "rdf:Description", "rdf:Bag", "groups:idRef"]
