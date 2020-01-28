@@ -7,9 +7,12 @@ Released under the MIT license
 
 {% load static %}
 <head>
-	{% block extra_head %}
+    {% block styles %}
+    {% include "wedesign/base_head.html" %}
+    {% endblock %}
+    {% block extra_head %}
     <title>{% block title %}{% endblock %}</title>
-	{% endblock %}
+    {% endblock %}
 </head>
 <body>
     <h1>{% block content_title %}{% endblock %}</h1>
