@@ -6,6 +6,8 @@ Released under the MIT license
 """
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.template import RequestContext
 from django.template.loader import get_template
@@ -80,3 +82,14 @@ def render_crispy_form(form, helper=None, context=None):
     ctx = {}
     ctx.update(csrf(context))
     return render_crispy_form(form, helper=helper, context=ctx)
+
+
+def replace_guest_user(user):
+    if not user.is_authenticated:
+        guest_user = getattr(settings, "WEDESIGN_GUEST_USER_NAME", "guest")
+        try:
+            return get_user_model().objects.get(username=guest_user)
+        except ObjectDoesNotExist:
+            pass
+
+    return user

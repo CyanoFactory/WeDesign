@@ -10,6 +10,7 @@ import os
 from io import StringIO, BytesIO, TextIOWrapper
 from urllib.error import URLError
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.transaction import atomic
@@ -18,6 +19,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from jsonview.decorators import json_view
 from jsonview.exceptions import BadRequest
+from wedesign.helpers import replace_guest_user
 
 from .metabolic_model import metabolic_model
 from .metabolic_model import sbml_parser
@@ -37,8 +39,10 @@ def index(request):
     template_form = ModelFromTemplateForm(choices=templates)
     bigg_form = ModelFromBiGGForm(None)
 
+    # Not using replace_guest_user here to prevent error when the account is missing
     if not request.user.is_authenticated:
-        models = []
+        guest_user = getattr(settings, "WEDESIGN_GUEST_USER_NAME", "guest")
+        models = DesignModel.objects.filter(user__username=guest_user)
     else:
         models = DesignModel.objects.filter(user=request.user)
 
@@ -55,8 +59,10 @@ def index(request):
 
 @ensure_csrf_cookie
 def design(request, pk):
+    user = replace_guest_user(request.user)
+
     try:
-        item = DesignModel.objects.get(user=request.user, pk=pk)
+        item = DesignModel.objects.get(user=user, pk=pk)
         current = item.get_latest_revision()
     except ObjectDoesNotExist:
         return render_queryset_to_response_error(request, error=404, msg="Model not found")
@@ -84,8 +90,10 @@ def design(request, pk):
 @ajax_required
 @json_view
 def get_reactions(request, pk):
+    user = replace_guest_user(request.user)
+
     try:
-        item = DesignModel.objects.get(user=request.user, pk=pk)
+        item = DesignModel.objects.get(user=user, pk=pk)
     except ObjectDoesNotExist:
         raise BadRequest("Bad Model")
 
@@ -107,8 +115,10 @@ def get_reactions(request, pk):
 @ajax_required
 @json_view
 def get_revisions(request, pk):
+    user = replace_guest_user(request.user)
+
     try:
-        item = DesignModel.objects.get(user=request.user, pk=pk)
+        item = DesignModel.objects.get(user=user, pk=pk)
     except ObjectDoesNotExist:
         raise BadRequest("Bad Model")
 
@@ -131,8 +141,10 @@ def export(request, pk):
     if form not in ["bioopt", "sbml", "sbml_wedesign", "json"]:
         return HttpResponseBadRequest("Bad format")
 
+    user = replace_guest_user(request.user)
+
     try:
-        model = DesignModel.objects.get(user=request.user, pk=pk)
+        model = DesignModel.objects.get(user=user, pk=pk)
         content = model.get_latest_revision().sbml
     except ObjectDoesNotExist:
         return HttpResponseBadRequest("Bad Model")
@@ -476,8 +488,10 @@ def delete(request, pk):
     return {}
 
 def history(request, pk):
+    user = replace_guest_user(request.user)
+
     try:
-        model = DesignModel.objects.get(user=request.user, pk=pk)
+        model = DesignModel.objects.get(user=user, pk=pk)
         revisions = model.revisions.all()
     except ObjectDoesNotExist:
         return render_queryset_to_response_error(request, error=404, msg="Model not found")
