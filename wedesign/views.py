@@ -19,8 +19,8 @@ from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from jsonview.decorators import json_view
 from jsonview.exceptions import BadRequest
-from wedesign.helpers import replace_guest_user
 
+from .metabolic_model import converter
 from .metabolic_model import metabolic_model
 from .metabolic_model import sbml_parser
 from .metabolic_model.optgene import OptGeneParser
@@ -28,7 +28,7 @@ from .metabolic_model.sbml_xml_generator import SbmlXMLGenerator, SbmlXMLGenerat
 from .command_list import apply_commandlist
 from .decorators import ajax_required
 from .forms import UploadModelForm, ModelFromTemplateForm, SaveModelAsForm, SaveModelForm, ModelFromBiGGForm
-from .helpers import render_queryset_to_response, render_queryset_to_response_error, render_crispy_form
+from .helpers import render_queryset_to_response, render_queryset_to_response_error, render_crispy_form, replace_guest_user
 from .models import DesignModel, Revision, DesignTemplate
 
 
@@ -329,45 +329,8 @@ def upload(request):
                     binary.write(chunk)
                 binary.seek(0)
 
-                if binary.read(1) == b'\x1f' and binary.read(1) == b'\x8b':
-                    # gzip
-                    binary.seek(0)
-                    import gzip
-                    data = gzip.decompress(binary.getvalue())
-                    binary = BytesIO()
-                    binary.write(data)
-
-                binary.seek(0)
-
-                def skip_bom(s):
-                    # fixme
-                    s.seek(0)
-
                 try:
-                    ss = TextIOWrapper(binary, encoding='utf-8')
-                    skip_bom(ss)
-
-                    try:
-                        if ss.readline().startswith("<?xml"):
-                            format = "sbml"
-                        else:
-                            format = "opt"
-                    finally:
-                        skip_bom(ss)
-
-                    if format == "sbml":
-                        sbml_handler = sbml_parser.SbmlHandler()
-                        sbml_parser.push_handler(sbml_handler)
-                        content = ss.read()
-                        skip_bom(ss)
-                        # closes ss
-                        sbml_parser.parser.parse(ss)
-                        model = sbml_handler.model
-                    else:
-                        content = ss.read()
-                        skip_bom(ss)
-                        bioopt = OptGeneParser(ss)
-                        model = bioopt.to_model()
+                    model, content = converter.from_stream(binary)
                 except UnicodeDecodeError:
                     form.add_error("file", "File does not have UTF-8 encoding")
                     form_html = render_crispy_form(form, context=request)
@@ -377,11 +340,6 @@ def upload(request):
                     form.add_error("file", "Model is empty")
                     form_html = render_crispy_form(form, context=request)
                     return {'success': False, 'form_html': form_html}
-
-                #except Exception as e:
-                #    form.add_error("file", "Not a valid model: " + str(e))
-                #    form_html = render_crispy_form(form, context=request)
-                #    return {'success': False, 'form_html': form_html}
 
                 dm = DesignModel.objects.create(
                     user=request.user,
@@ -401,7 +359,7 @@ def upload(request):
                 form_html = render_crispy_form(form, context=request)
                 return {'success': False, 'form_html': form_html}
         elif pk == "2":
-            # from template
+            # from template, already in JSON format
             templates = DesignTemplate.objects.values_list("pk", "name")
             form = ModelFromTemplateForm(templates, request.POST, request.FILES)
 
@@ -433,31 +391,21 @@ def upload(request):
             form = ModelFromBiGGForm(request.POST, request.FILES)
             if form.is_valid():
                 import urllib
-                import gzip
 
                 name = form.cleaned_data.get('name')
                 choice = form.cleaned_data.get('choice')
                 url = "http://bigg.ucsd.edu/static/models/" + choice + ".xml.gz"
                 try:
                     response = urllib.request.urlopen(url)
+                    response_content = response.read()
                 except URLError:
                     form_html = render_crispy_form(form, context=request)
                     return {'success': False, 'form_html': form_html}
 
-                data = gzip.decompress(response.read())
                 binary = BytesIO()
-                binary.write(data)
+                binary.write(response_content)
                 binary.seek(0)
-
-                ss = TextIOWrapper(binary, encoding='utf-8')
-
-                sbml_handler = sbml_parser.SbmlHandler()
-                sbml_parser.push_handler(sbml_handler)
-                content = ss.read()
-                ss.seek(0)
-                # closes ss
-                sbml_parser.parser.parse(ss)
-                model = sbml_handler.model
+                model, content = converter.from_stream(binary)
 
                 dm = DesignModel.objects.create(
                     user=request.user,
