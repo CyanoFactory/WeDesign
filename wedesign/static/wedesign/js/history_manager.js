@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+*/
 define(["require", "exports", "./metabolic_model", "jquery"], function (require, exports, mm, $) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

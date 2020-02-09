@@ -155,9 +155,7 @@ Released under the MIT license
     });
 </script>
 
-{% endblock %}
-
-{% block extrastyles %}
+<style>
 span.cyano-external-metabolite { color: green }
 
 .cyano-metabolite-list tr td:first-child,
@@ -200,6 +198,12 @@ svg text
     margin-top: 5px;
     margin-bottom: 5px;
 }
+
+input[type="radio"],
+input[type="checkbox"] {
+    margin-left: 0px !important;
+}
+</style>
 {% endblock %}
 
 {% block content %}

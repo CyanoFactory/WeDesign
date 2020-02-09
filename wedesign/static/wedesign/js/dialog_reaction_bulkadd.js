@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+*/
 define(["require", "exports", "./metabolic_model", "jquery", "./metabolic_model", "datatables.net"], function (require, exports, mm, $, metabolic_model_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

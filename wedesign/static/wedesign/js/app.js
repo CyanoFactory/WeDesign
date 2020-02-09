@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+*/
 define(["require", "exports", "jquery", "./page_reactions", "./page_metabolites", "./page_compartments", "./page_settings", "./page_simulation", "./page_history", "./dialog_reaction", "./dialog_reaction_bulkadd", "./dialog_reaction_delete", "./dialog_metabolite", "./dialog_save", "./dialog_saveas", "./dialog_compartment", "./request_handler", "./history_manager"], function (require, exports, $, reactions, metabolites, compartments, settings, simulation, history, dialog_reaction, dialog_reaction_bulkadd, dialog_reaction_delete, dialog_metabolite, dialog_save, dialog_saveas, dialog_compartment, request_handler_1, history_manager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

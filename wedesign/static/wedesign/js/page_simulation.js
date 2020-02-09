@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2019 Gabriel Kind
+Hochschule Mittweida, University of Applied Sciences
+
+Released under the MIT license
+*/
 define(["require", "exports", "jquery", "./design_utils", "datatables.net"], function (require, exports, $, design_utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
