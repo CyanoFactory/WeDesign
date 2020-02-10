@@ -644,19 +644,110 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
             return csv;
         }
         createGraph(flux) {
+            const reac_offset = this.app.model.metabolites.length;
+            const obj = this.app.settings_page.getObjective();
+            const visit_threshold = 300;
+            // Create sparse array
+            let edges = [];
+            let node_queue = [];
+            let edge_visit_dict = {};
+            // Pen scaling factor calculation
+            let max_flux = Number.MIN_SAFE_INTEGER;
+            for (const f in flux) {
+                max_flux = Math.max(flux[f] < 0.0 ? -flux[f] : flux[f], max_flux);
+            }
+            max_flux = 10 / max_flux;
+            for (const reac of this.app.model.reactions) {
+                for (const p of reac.products) {
+                    for (const s of reac.substrates) {
+                        let f = flux[reac.id];
+                        const flux_norm = Math.abs(f) * max_flux;
+                        edges.push({
+                            id: reac.id,
+                            label: reac.name,
+                            flux: f.toFixed(2),
+                            color: f < 0.0 ? "red" : f > 0.0 ? "green" : "black",
+                            penwidth: (flux_norm - 1.0 < 1.0) ? 1 : flux_norm,
+                            lname: s.id,
+                            left: this.app.model.metabolite.index("id", s.id),
+                            rname: p.id,
+                            right: this.app.model.metabolite.index("id", p.id),
+                            reverse: reac.reversible,
+                            style: reac.id == obj ? "dashed" : "solid",
+                            visited: false,
+                            skip: false
+                        });
+                        if (reac.id == obj) {
+                            let cur = edges[edges.length - 1];
+                            cur.visited = true;
+                            edge_visit_dict[s.id] = cur.left;
+                            edge_visit_dict[p.id] = cur.right;
+                            node_queue.push(cur);
+                        }
+                    }
+                }
+            }
+            let visit_count = 0;
+            while (node_queue.length > 0) {
+                if (visit_count > visit_threshold) {
+                    break;
+                }
+                const parent = node_queue.pop();
+                // get all children of node
+                for (const e of edges) {
+                    if (e.right == parent.left) {
+                        if (!e.visited) {
+                            e.visited = true;
+                            ++visit_count;
+                            node_queue.unshift(e);
+                        }
+                    }
+                }
+            }
+            for (let e of edges) {
+                if (e.id == obj) {
+                    node_queue.push(e);
+                }
+                else {
+                    e.visited = false;
+                }
+            }
+            const visit_above_threshold = visit_count > visit_threshold;
+            visit_count = 0;
+            while (node_queue.length > 0) {
+                if (visit_count > visit_threshold) {
+                    break;
+                }
+                const parent = node_queue.pop();
+                // get all children of node
+                for (const e of edges) {
+                    if (e.right == parent.left) {
+                        if (!e.visited) {
+                            e.visited = true;
+                            if (visit_above_threshold && e.flux <= 0.0) {
+                                e.skip = true;
+                                continue;
+                            }
+                            ++visit_count;
+                            edge_visit_dict[e.lname] = e.left;
+                            edge_visit_dict[e.rname] = e.right;
+                            node_queue.unshift(e);
+                        }
+                    }
+                }
+            }
             // the ugly indent is intentional because template strings preserve leading whitespace
             let graph = `strict digraph {
 graph [overlap=False, rankdir=LR, splines=True];
 node [colorscheme=pastel19, label="\\N", style=filled];
 `;
-            const reac_offset = this.app.model.metabolites.length;
-            // Create sparse array
-            let edges = [];
-            // A_ext -> A
             let i = 0;
             for (const met of this.app.model.metabolites) {
+                if (!edge_visit_dict.hasOwnProperty(met.id)) {
+                    continue;
+                }
                 const color = (i % 9) + 1;
-                graph += `${i} [
+                graph += `${edge_visit_dict[met.id]} [
     color=${color},
     label="${met.name}",
     shape=oval
@@ -664,33 +755,10 @@ node [colorscheme=pastel19, label="\\N", style=filled];
 `;
                 ++i;
             }
-            // Pen scaling factor calculation
-            let max_flux = Number.MIN_SAFE_INTEGER;
-            for (const f in flux) {
-                max_flux = Math.max(flux[f] < 0.0 ? -flux[f] : flux[f], max_flux);
-            }
-            max_flux = 10 / max_flux;
-            const obj = this.app.settings_page.getObjective();
-            for (const reac of this.app.model.reactions) {
-                for (const p of reac.products) {
-                    for (const s of reac.substrates) {
-                        let f = flux[reac.id];
-                        const flux_norm = Math.abs(f) * max_flux;
-                        edges.push({
-                            label: reac.name,
-                            flux: f.toFixed(2),
-                            color: f < 0.0 ? "red" : f > 0.0 ? "green" : "black",
-                            penwidth: (flux_norm - 1.0 < 1.0) ? 1 : flux_norm,
-                            left: this.app.model.metabolite.index("id", s.id),
-                            right: this.app.model.metabolite.index("id", p.id),
-                            reverse: reac.reversible,
-                            style: reac.id == obj ? "dashed" : "solid"
-                        });
-                    }
-                }
-            }
-            i = reac_offset;
             for (const edge of edges) {
+                if (!edge.visited || (visit_count > visit_threshold && edge.skip)) {
+                    continue;
+                }
                 graph += `${edge.left} -> ${edge.right} [
     color=${edge.color},
     label="${edge.label} (${edge.flux})",
@@ -698,13 +766,12 @@ node [colorscheme=pastel19, label="\\N", style=filled];
     style=${edge.style},
 ];
 `;
-                if (edge.reverse) {
-                    graph += `${edge.left} -> ${edge.right} [
+                if (edge.reverse && visit_count <= visit_threshold) {
+                    graph += `${edge.right} -> ${edge.left} [
     label="${edge.label}",
 ]
 `;
                 }
-                ++i;
             }
             graph += '}\n';
             this.last_dot_graph = graph;
