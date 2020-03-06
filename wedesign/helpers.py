@@ -7,7 +7,7 @@ Released under the MIT license
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
 from django.shortcuts import render
 from django.template import RequestContext
 from django.template.loader import get_template
@@ -88,6 +88,6 @@ def replace_guest_user(user):
         try:
             return get_user_model().objects.get(username=guest_user)
         except ObjectDoesNotExist:
-            pass
+            raise ImproperlyConfigured("WEDESIGN_GUEST_USER_NAME {} does not exist".format(guest_user))
 
     return user
