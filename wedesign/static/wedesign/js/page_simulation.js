@@ -92,6 +92,7 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
             this.last_target_obj_results = [];
             this.simulation_chart = null;
             this.is_dragging = false;
+            this.worker_is_ready = false;
             this.source_element = where;
             where.appendChild(template.content.cloneNode(true));
             this.table_element_flux = where.getElementsByClassName("cyano-flux-list")[0];
@@ -321,6 +322,7 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
             this.app.glpk_worker.onmessage = (evt) => {
                 if (evt.data.initialized == true) {
                     // ignore init message
+                    this.worker_is_ready = true;
                     return;
                 }
                 this.app.reaction_page.flux = {};
@@ -333,7 +335,15 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
                 fn("The solution is " + solutions[evt.data.result.status - 1] + ". Flux of objective is " +
                     evt.data.result.z.toFixed(4));
             };
-            this.app.model.fba(this.app.glpk_worker, this.app.model.reaction.get("id", this.app.settings_page.getObjective()), this.app.settings_page.maximizeObjective(), this.app.settings_page.getCreateExchangeReactions());
+            const worker_fn = () => {
+                if (!this.worker_is_ready) {
+                    setTimeout(worker_fn, 10);
+                }
+                else {
+                    this.app.model.fba(this.app.glpk_worker, this.app.model.reaction.get("id", this.app.settings_page.getObjective()), this.app.settings_page.maximizeObjective(), this.app.settings_page.getCreateExchangeReactions());
+                }
+            };
+            worker_fn();
         }
         design_fba() {
             const obj = this.app.model.reaction.get("id", this.app.settings_page.getObjective());

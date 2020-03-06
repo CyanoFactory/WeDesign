@@ -115,6 +115,7 @@ export class Page {
     simulation_chart: any = null;
 
     is_dragging: boolean = false;
+    worker_is_ready: boolean = false;
 
     constructor(where: HTMLElement, app: app.AppManager) {
         this.source_element = where;
@@ -395,6 +396,7 @@ export class Page {
         this.app.glpk_worker.onmessage = (evt) => {
             if (evt.data.initialized == true) {
                 // ignore init message
+                this.worker_is_ready = true;
                 return;
             }
 
@@ -411,10 +413,18 @@ export class Page {
                 evt.data.result.z.toFixed(4));
         };
 
-        this.app.model.fba(this.app.glpk_worker,
-            this.app.model.reaction.get("id", this.app.settings_page.getObjective()),
-            this.app.settings_page.maximizeObjective(),
-            this.app.settings_page.getCreateExchangeReactions());
+        const worker_fn = () => {
+            if (!this.worker_is_ready) {
+                setTimeout(worker_fn, 10);
+            } else {
+                this.app.model.fba(this.app.glpk_worker,
+                    this.app.model.reaction.get("id", this.app.settings_page.getObjective()),
+                    this.app.settings_page.maximizeObjective(),
+                    this.app.settings_page.getCreateExchangeReactions());
+            }
+        };
+
+        worker_fn();
     }
 
     design_fba() {
