@@ -63,7 +63,7 @@ def design(request, pk):
 
     try:
         item = DesignModel.objects.get(pk=pk)
-        if item.user != request.user:
+        if item.user != user:
             return render_queryset_to_response_error(
                 request, error=404, msg="You have no permissions to access this model")
         current = item.get_latest_revision()
