@@ -65,13 +65,11 @@ def render_queryset_to_response_error(request=[], queryset=None, model=None, dat
     t = get_template('wedesign/error.html')
     data['message'] = msg
 
-    if settings.DEBUG or (request.user.is_authenticated() and request.user.is_superuser):
+    if settings.DEBUG or (request.user.is_authenticated and request.user.is_superuser):
         data['message_extra'] = msg_debug
 
-    c = RequestContext(request, data)
-
     return response(
-        t.render(c),
+        t.render(data),
         content_type='text/html; charset=UTF-8',
         status=error)
 
