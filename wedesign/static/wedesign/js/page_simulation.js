@@ -245,17 +245,14 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
         ;
         notifyInfo(text) {
             document.getElementById("wedesign-notify-box").innerHTML = '<div class="alert alert-info" role="alert">\
-            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>\
             <span class="sr-only">Info:</span>' + text + '</div>';
         }
         notifyWarning(text) {
             document.getElementById("wedesign-notify-box").innerHTML = '<div class="alert alert-warning" role="alert">\
-            <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>\
             <span class="sr-only">Info:</span>' + text + '</div>';
         }
         notifyError(text) {
             document.getElementById("wedesign-notify-box").innerHTML = '<div class="alert alert-danger" role="alert">\
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>\
             <span class="sr-only">Error:</span>' + text + '</div>';
         }
         simulate() {

@@ -62,7 +62,10 @@ def design(request, pk):
     user = replace_guest_user(request.user)
 
     try:
-        item = DesignModel.objects.get(user=user, pk=pk)
+        item = DesignModel.objects.get(pk=pk)
+        if item.user != request.user:
+            return render_queryset_to_response_error(
+                request, error=404, msg="You have no permissions to access this model")
         current = item.get_latest_revision()
     except ObjectDoesNotExist:
         return render_queryset_to_response_error(request, error=404, msg="Model not found")
