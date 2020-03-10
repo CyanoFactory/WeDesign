@@ -6,41 +6,48 @@ Released under the MIT license
 {% endcomment %}
 
 {% load static %}
+
+{% get_static_prefix as static_prefix %}
+
+{% with static_prefix|add:"wedesign/" as wedesign_prefix %}
+{% with static_prefix|add:"wedesign/node_modules/" as node_modules %}
+
 <!-- style -->
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/css/styles.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ wedesign_prefix }}css/styles.css" />
 
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/externals/css/bootstrap.css" />
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/css/bootstrap-custom.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}bootstrap3/dist/css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ wedesign_prefix }}css/bootstrap-custom.css" />
 
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}datatables.net-bs/css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
 
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/externals/css/bootstrap-multiselect.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}bootstrap-multiselect/dist/css/bootstrap-multiselect.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}bootstrap-spinedit/css/bootstrap-spinedit.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}bootstrap-editable/css/bootstrap-editable.css" />
 
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/externals/css/bootstrap-spinedit.css" />
-
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/externals/css/selectize.css" />
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/externals/css/selectize.bootstrap3.css" />
-
-<link rel="stylesheet" type="text/css" media="all" href="{% get_static_prefix %}wedesign/externals/css/bootstrap-editable.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}selectize/dist/css/selectize.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ node_modules }}selectize/dist/css/selectize.bootstrap3.css" />
 
 <!-- javascript -->
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/node_modules/jquery/dist/jquery.js"></script>
+<script type="text/javascript" src="{{ node_modules }}jquery/dist/jquery.js"></script>
 
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/js/tooltip.js"></script>
+<script type="text/javascript" src="{{ wedesign_prefix }}js/tooltip.js"></script>
+<script type="text/javascript" src="{{ wedesign_prefix }}js/csrf.js"></script>
+<script type="text/javascript" src="{{ wedesign_prefix }}js/spin.js"></script>
+<script type="text/javascript" src="{{ wedesign_prefix }}js/wait_indicator.js"></script>
 
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/js/csrf.js"></script>
+<script type="text/javascript" src="{{ node_modules }}bootstrap3/dist/js/bootstrap.js"></script>
+<script type="text/javascript" src="{{ node_modules }}bootstrap-multiselect/dist/js/bootstrap-multiselect.min.js"></script>
+<script type="text/javascript" src="{{ node_modules }}bootstrap-spinedit/js/bootstrap-spinedit.js"></script>
+<script type="text/javascript" src="{{ node_modules }}bootstrap-editable/js/index.js"></script>
 
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/externals/js/bootstrap.js"></script>
+<script type="text/javascript" src="{{ node_modules }}datatables.net/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="{{ node_modules }}datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="{{ node_modules }}datatables.net-buttons/js/dataTables.buttons.min.js
+"></script>
+<script type="text/javascript" src="{{ node_modules }}datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+<script type="text/javascript" src="{{ node_modules }}datatables.net-buttons/js/buttons.print.min.js"></script>
 
-<script type="text/javascript" charset="utf8" src="{% get_static_prefix %}wedesign/node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" charset="utf8" src="{% get_static_prefix %}wedesign/node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
-
-<script type="text/javascript" charset="utf8" src="{% get_static_prefix %}wedesign/externals/js/bootbox.js"></script>
-<script type="text/javascript" charset="utf8" src="{% get_static_prefix %}wedesign/externals/js/bootstrap-multiselect.js"></script>
-
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/js/spin.js"></script>
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/js/wait_indicator.js"></script>
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/externals/js/bootstrap-spinedit.js"></script>
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/externals/js/selectize.js"></script>
-
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/externals/js/bootstrap-editable.js"></script>
+<script type="text/javascript" src="{{ node_modules }}selectize/dist/js/standalone/selectize.min.js"></script>
+{% endwith %}
+{% endwith %}

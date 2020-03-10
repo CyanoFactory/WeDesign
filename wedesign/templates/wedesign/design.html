@@ -17,16 +17,21 @@ Released under the MIT license
 {% block content_title %}WeDesign :: {{ name }}{% endblock %}
 
 {% block extra_head %}
-<script src="{% get_static_prefix %}wedesign/externals/js/d3.v3.js"></script>
-<link href="{% get_static_prefix %}wedesign/externals/css/c3.css" rel="stylesheet" type="text/css">
-<script src="{% get_static_prefix %}wedesign/externals/js/c3.js"></script>
-<script src="{% get_static_prefix %}wedesign/js/viz.js"></script>
-<script type="text/javascript" src="{% get_static_prefix %}wedesign/externals/js/svg-pan-zoom.js"></script>
-<script src="{% get_static_prefix %}wedesign/node_modules/requirejs/require.js"
+
+{% get_static_prefix as static_prefix %}
+{% with static_prefix|add:"wedesign/" as wedesign_prefix %}
+{% with static_prefix|add:"wedesign/node_modules/" as node_modules %}
+
+<script src="{{ node_modules }}d3/dist/d3.min.js"></script>
+<link href="{{ node_modules }}c3/c3.min.css" rel="stylesheet" type="text/css">
+<script src="{{ node_modules }}c3/c3.min.js"></script>
+<script src="{{ wedesign_prefix }}js/viz.js"></script>
+<script type="text/javascript" src="{{ node_modules }}svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
+<script src="{{ node_modules }}requirejs/require.js"
         data-main="{% get_static_prefix %}wedesign/js/main"></script>
-<!--<script src="{% get_static_prefix %}wedesign/js/metabolic_model.js"></script>-->
-<script src="{% get_static_prefix %}wedesign/js/mba_chart.js"></script>
-    <script src="{% get_static_prefix %}wedesign/js/selectize_plugin.js"></script>
+<script src="{{ wedesign_prefix }}js/mba_chart.js"></script>
+{% endwith %}
+{% endwith %}
 
 <script type="text/javascript">
     "use strict";
@@ -119,8 +124,11 @@ Released under the MIT license
             urls.get_reactions = "{% url "wedesign:reactions" pk=pk %}";
             urls.get_revisions = "{% url "wedesign:revisions" pk=pk %}";
 
-            const glpk_worker = new Worker("{% get_static_prefix %}wedesign/node_modules/glpk.js/glpk-worker.js");
-            const viz = new Viz({ workerURL: "{% get_static_prefix %}wedesign/js/viz.lite.render.js" });
+            {% get_static_prefix as static_prefix %}
+            {% with static_prefix|add:"wedesign/" as wedesign_prefix %}
+            const glpk_worker = new Worker("{{ wedesign_prefix }}js/glpk-worker.js");
+            const viz = new Viz({ workerURL: "{{ wedesign_prefix }}js/viz.lite.render.js" });
+            {% endwith %}
 
             callback(metabolic_model_cls, urls, glpk_worker, viz);
         };

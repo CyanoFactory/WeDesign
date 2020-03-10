@@ -4,3 +4,5 @@ __pycache__/
 *.sqlite*
 *.d.ts
 *.map
+node_modules/
+

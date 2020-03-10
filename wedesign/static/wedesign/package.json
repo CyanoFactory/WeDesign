@@ -1,0 +1,37 @@
+{
+  "name": "wedesign",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bootstrap-editable": "^1.0.1",
+    "bootstrap-multiselect": "^0.9.15",
+    "bootstrap-spinedit": "^0.0.1",
+    "bootstrap3": "^3.3.5",
+    "c3": "^0.7.15",
+    "d3": "^5.15.0",
+    "datatables.net": "^1.10.20",
+    "datatables.net-bs": "^1.10.20",
+    "datatables.net-buttons": "^1.6.1",
+    "datatables.net-buttons-bs": "^1.6.1",
+    "glpk.js": "^3.0.0",
+    "jquery": "^3.4.1",
+    "requirejs": "^2.3.6",
+    "selectize": "^0.12.6",
+    "svg-pan-zoom": "^3.6.1"
+  },
+  "devDependencies": {
+    "@types/bootstrap": "^4.3.1",
+    "@types/c3": "^0.7.4",
+    "@types/d3": "^5.7.2",
+    "@types/datatables.net": "^1.10.18",
+    "@types/datatables.net-buttons": "^1.4.3",
+    "@types/jquery": "^3.3.33",
+    "@types/selectize": "^0.12.34"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
