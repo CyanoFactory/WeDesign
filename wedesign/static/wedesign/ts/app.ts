@@ -47,14 +47,17 @@ export class AppManager {
     readonly request_handler: RequestHandler;
     readonly glpk_worker: Worker;
     readonly viz: any;
+    glpk_worker_is_ready: boolean = false;
     history_manager: HistoryManager = null;
     model: mm.Model;
     old_model: string;
 
-    constructor(mm_cls: any, model_json: any, urls: any, glpk_worker: Worker, viz: any) {
+    constructor(mm_cls: any, urls: any, glpk_worker: Worker, viz: any) {
+        glpk_worker.onmessage = (evt) => {
+            this.glpk_worker_is_ready = true;
+        };
+
         this.model = new mm_cls.Model();
-        this.model.fromJson(model_json);
-        this.old_model = model_json;
 
         this.urls = urls;
         this.request_handler = new RequestHandler(this, -1);
@@ -78,14 +81,21 @@ export class AppManager {
         this.history_page = new history.Page(document.getElementById("history-tab")!, this);
         this.simulation_page = new simulation.Page(document.getElementById("simulation-tab")!, this);
     }
+
+    assignModel(model_json: any) {
+        this.model.fromJson(model_json);
+        this.old_model = model_json;
+    }
 }
 
 export function run(mm_cls: any, urls: any, glpk_worker: Worker, viz: any) {
+    app = new AppManager(mm_cls, urls, glpk_worker, viz);
+
     $.ajax({
         url: urls.get_reactions,
         context: document.body
-    }).done(function(x: any) {
-        app = new AppManager(mm_cls, x, urls, glpk_worker, viz);
+    }).done(function(model: any) {
+        app.assignModel(model);
 
         $.ajax({
             url: urls.get_revisions,

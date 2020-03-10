@@ -8,11 +8,13 @@ define(["require", "exports", "jquery", "./page_reactions", "./page_metabolites"
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class AppManager {
-        constructor(mm_cls, model_json, urls, glpk_worker, viz) {
+        constructor(mm_cls, urls, glpk_worker, viz) {
+            this.glpk_worker_is_ready = false;
             this.history_manager = null;
+            glpk_worker.onmessage = (evt) => {
+                this.glpk_worker_is_ready = true;
+            };
             this.model = new mm_cls.Model();
-            this.model.fromJson(model_json);
-            this.old_model = model_json;
             this.urls = urls;
             this.request_handler = new request_handler_1.RequestHandler(this, -1);
             this.glpk_worker = glpk_worker;
@@ -33,14 +35,19 @@ define(["require", "exports", "jquery", "./page_reactions", "./page_metabolites"
             this.history_page = new history.Page(document.getElementById("history-tab"), this);
             this.simulation_page = new simulation.Page(document.getElementById("simulation-tab"), this);
         }
+        assignModel(model_json) {
+            this.model.fromJson(model_json);
+            this.old_model = model_json;
+        }
     }
     exports.AppManager = AppManager;
     function run(mm_cls, urls, glpk_worker, viz) {
+        app = new AppManager(mm_cls, urls, glpk_worker, viz);
         $.ajax({
             url: urls.get_reactions,
             context: document.body
-        }).done(function (x) {
-            app = new AppManager(mm_cls, x, urls, glpk_worker, viz);
+        }).done(function (model) {
+            app.assignModel(model);
             $.ajax({
                 url: urls.get_revisions,
             }).done((x) => app.history_page.init(x));

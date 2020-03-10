@@ -115,7 +115,6 @@ export class Page {
     simulation_chart: any = null;
 
     is_dragging: boolean = false;
-    worker_is_ready: boolean = false;
 
     constructor(where: HTMLElement, app: app.AppManager) {
         this.source_element = where;
@@ -386,34 +385,28 @@ export class Page {
             "Unbound"
         ];
 
-        this.app.glpk_worker.onerror = (err) => {
-            console.log(err);
-        };
-
-        this.app.glpk_worker.onmessage = (evt) => {
-            if (evt.data.initialized == true) {
-                // ignore init message
-                this.worker_is_ready = true;
-                return;
-            }
-
-            this.app.reaction_page.flux = {};
-            const vars = evt.data.result.vars;
-            for (const key in vars) {
-                this.app.reaction_page.flux[key] = vars[key];
-            }
-
-            this.app.reaction_page.datatable.rows().invalidate();
-
-            const fn = evt.data.result.status == 5 ? this.app.simulation_page.notifyInfo : this.app.simulation_page.notifyWarning;
-            fn("The solution is " + solutions[evt.data.result.status - 1] + ". Flux of objective is " +
-                evt.data.result.z.toFixed(4));
-        };
-
         const worker_fn = () => {
-            if (!this.worker_is_ready) {
+            if (!this.app.glpk_worker_is_ready) {
                 setTimeout(worker_fn, 10);
             } else {
+                this.app.glpk_worker.onerror = (err) => {
+                    console.log(err);
+                };
+
+                this.app.glpk_worker.onmessage = (evt) => {
+                    this.app.reaction_page.flux = {};
+                    const vars = evt.data.result.vars;
+                    for (const key in vars) {
+                        this.app.reaction_page.flux[key] = vars[key];
+                    }
+
+                    this.app.reaction_page.datatable.rows().invalidate();
+
+                    const fn = evt.data.result.status == 5 ? this.app.simulation_page.notifyInfo : this.app.simulation_page.notifyWarning;
+                    fn("The solution is " + solutions[evt.data.result.status - 1] + ". Flux of objective is " +
+                        evt.data.result.z.toFixed(4));
+                };
+
                 this.app.model.fba(this.app.glpk_worker,
                     this.app.model.reaction.get("id", this.app.settings_page.getObjective()),
                     this.app.settings_page.maximizeObjective(),
