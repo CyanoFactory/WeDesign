@@ -47,6 +47,7 @@ export class Page {
 
         this.datatable = $(this.table_element).DataTable(<any>{
             "deferRender": true,
+            "autoWidth": false,
             columns: [
                     {},
                     {},

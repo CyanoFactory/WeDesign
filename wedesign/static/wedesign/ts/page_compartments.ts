@@ -33,6 +33,18 @@ Create new compartment
 </button>
 `;
 
+let template_filter = document.createElement('template');
+template_filter.innerHTML = `
+<div class="col-sm-6">
+<label for="column-visibility-filter">Visible columns</label>
+<select class="column-visibility-filter form-control combobox" multiple="multiple">
+    <option selected="selected">ID</option>
+    <option selected="selected">Name</option>
+    <option selected="selected">Members</option>
+    <option selected="selected">Type</option>
+</select>
+`;
+
 export class Page {
     readonly app: app.AppManager;
     readonly datatable: DataTables.Api;
@@ -51,6 +63,7 @@ export class Page {
 
         this.datatable = $(this.table_element).DataTable(<any>{
             "deferRender": true,
+            "autoWidth": false,
             columns: [
                     {},
                     {},
@@ -59,20 +72,22 @@ export class Page {
                 ],
             columnDefs: [
                 {
+                    "className": "wedesign_table_id",
                     "targets": 0,
                     "data": function (rowData, type, set, meta) {
                         return rowData.id;
                     }
                 },
                 {
+                    "className": "wedesign_table_name",
                     "targets": 1,
                     "data": function (rowData, type, set, meta) {
-                        return rowData.name;
+                        return rowData.get_name_or_id();
                     }
                 },
                 {
+                    "className": "wedesign_table_members",
                     "targets": 2,
-                    "orderable": false,
                     "render": function(data: mm.Compartment[], type, row, meta) {
                         const c = row.id;
                         let count = 0;
@@ -86,7 +101,7 @@ export class Page {
                 },
                 {
                     "targets": 3,
-                    "orderable": false,
+                    "className": "wedesign_table_type",
                     "render": function(data: mm.Compartment[], type, row, meta) {
                         if (app.model.getExternalCompartment() == row) {
                             return "External Compartment";
@@ -136,21 +151,36 @@ export class Page {
 
         /* Event handler */
 
-        // 1st column clicked
-        $(this.table_element).delegate('tr td:first-child', 'click', function() {
-            let row = self.datatable.row($(this).closest("tr"));
-            app.dialog_compartment.show(<mm.Compartment>row.data());
-        });
-
-        // 2nd column clicked
-        $(this.table_element).delegate('tr td:nth-child(2)', 'click', function() {
+        // ID or name clicked
+        $(this.table_element).find("tbody").on("click", ".wedesign_table_id,.wedesign_table_name", function() {
             let row = self.datatable.row($(this).closest("tr"));
             app.dialog_compartment.show(<mm.Compartment>row.data());
         });
 
         // add compartment button
-        $(this.source_element).find(".create-compartment-button").click(function (event) {
+        $(this.source_element).find(".create-compartment-button").on("click", function (event) {
             app.dialog_compartment.show();
+        });
+
+        /* Filter */
+        where.children[0].children[1].appendChild(template_filter.content.cloneNode(true));
+
+        (<any>$(where.getElementsByClassName("column-visibility-filter")[0])).multiselect({
+            buttonClass: 'btn btn-default btn-xs',
+            onChange: function(option, checked, select) {
+                for (const opt of option) {
+                    self.datatable.column(opt.index).visible(checked);
+                }
+            },
+            buttonText: function(options: HTMLOptionElement[], select) {
+                if (options.length === 0) {
+                    return 'None';
+                } else if (options.length === 4) {
+                    return 'All';
+                } else {
+                    return `Some (${options.length})`;
+                }
+            }
         });
     }
 

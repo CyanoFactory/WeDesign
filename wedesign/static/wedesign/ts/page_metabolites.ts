@@ -15,6 +15,7 @@ template.innerHTML = `
 <table class="cyano-metabolite-list table table-striped table-hover">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Name</th>
             <th>Compartment</th>
             <th>Consumed by</th>
@@ -38,6 +39,15 @@ Delete unused metabolites
 let template_filter = document.createElement('template');
 template_filter.innerHTML = `
 <div class="col-sm-6">
+<label for="column-visibility-filter">Visible columns</label>
+<select class="column-visibility-filter form-control combobox" multiple="multiple">
+    <option>ID</option>
+    <option selected="selected">Name</option>
+    <option selected="selected">Compartment</option>
+    <option selected="selected">Consumed by</option>
+    <option selected="selected">Produced by</option>
+    <option selected="selected">Is External</option>
+</select>
 <label for="cyano-list-filter">Filter metabolites</label>
 <select class="cyano-list-filter form-control combobox" multiple="multiple">
     <option selected="selected">Is internal</option>
@@ -70,6 +80,7 @@ export class Page {
 
         this.datatable = $(this.table_element).DataTable(<any>{
             "deferRender": true,
+            "autoWidth": false,
             columns: [
                     {},
                     {},
@@ -80,13 +91,23 @@ export class Page {
                 ],
             columnDefs: [
                 {
+                    "className": "wedesign_table_id",
                     "targets": 0,
-                    "data": function (rowData, type, set, meta) {
-                        return rowData.name;
+                    "visible": false,
+                    "data": function (rowData: mm.Reaction) {
+                        return rowData.id;
                     }
                 },
                 {
+                    "className": "wedesign_table_name",
                     "targets": 1,
+                    "data": function (rowData, type, set, meta) {
+                        return rowData.get_name_or_id();
+                    }
+                },
+                {
+                    "className": "wedesign_table_compartment",
+                    "targets": 2,
                     "data": function (rowData, type, set, meta) {
                         const c: mm.Compartment | null = app.model.compartment.get("id", rowData.compartment);
                         if (c != null) {
@@ -96,8 +117,8 @@ export class Page {
                     }
                 },
                 {
-                    "targets": 2,
-                    "orderable": false,
+                    "className": "wedesign_table_consumed",
+                    "targets": 3,
                     "data": function (rowData, type, set, meta) {
                         return rowData.consumed;
                     },
@@ -112,8 +133,8 @@ export class Page {
                     }
                 },
                 {
-                    "targets": 3,
-                    "orderable": false,
+                    "className": "wedesign_table_produced",
+                    "targets": 4,
                     "data": function (rowData, type, set, meta) {
                         return rowData.produced;
                     },
@@ -128,8 +149,8 @@ export class Page {
                     }
                 },
                 {
-                    "targets": 4,
-                    "orderable": false,
+                    "className": "wedesign_table_external",
+                    "targets": 5,
                     "searchable": false,
                     "data": function (rowData, type, set, meta) {
                         return rowData.isExternal(app.model);
@@ -139,18 +160,10 @@ export class Page {
                             return data === true ? "External" : "Internal";
                         }
 
-                        return "<div class='checkbox'> \
+                        return "<div class='checkbox wedesign_external_checkbox'> \
                         <input type='checkbox' id='external" + meta.row + "' " + (data ? "checked='checked'" : "") + "> \
                         <label for='external"  + meta.row + "'>External</label> \
                         </div>";
-                    }
-                },
-                {
-                    "targets": 5,
-                    "visible": false,
-                    "orderable": true,
-                    "data": function (rowData: mm.Reaction) {
-                        return rowData.id;
                     }
                 }
             ],
@@ -210,6 +223,24 @@ export class Page {
             }
         });
 
+        (<any>$(where.getElementsByClassName("column-visibility-filter")[0])).multiselect({
+            buttonClass: 'btn btn-default btn-xs',
+            onChange: function(option, checked, select) {
+                for (const opt of option) {
+                    self.datatable.column(opt.index).visible(checked);
+                }
+            },
+            buttonText: function(options: HTMLOptionElement[], select) {
+                if (options.length === 0) {
+                    return 'None';
+                } else if (options.length === 6) {
+                    return 'All';
+                } else {
+                    return `Some (${options.length})`;
+                }
+            }
+        });
+
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
                 if (settings.nTable == self.table_element) {
@@ -245,7 +276,6 @@ export class Page {
                 $(this).data("toggle", "tooltip");
                 $(this).data("placement", "top");
 
-
                 let reaction: mm.Reaction = self.app.model.reaction.checked_get("name", $(this).text());
                 let text: string = reaction.toString(self.app.model);
 
@@ -256,22 +286,33 @@ export class Page {
             }
         }, ".cyano-enzyme");
 
-        // 1st column clicked
-        $(this.table_element).delegate('tr td:first-child', 'click', function() {
-            let row = self.datatable.row($(this).closest("tr"));
+        $(this.table_element).find("tbody").on("click", ".wedesign_table_id,.wedesign_table_name", function() {
+            // Open edit dialog when ID or Name are clicked
+            const tr = $(this).closest("tr");
+            const row = self.datatable.row(tr);
             app.dialog_metabolite.show(<mm.Metabolite>row.data());
         });
 
-        // Enzyme in 2nd or 3rd col
-        $(this.table_element).on("click", ".cyano-enzyme", function(event) {
-            // FIXME: should use ID
-            let reaction: mm.Reaction = self.app.model.reaction.checked_get("name", $(this).text());
-            app.dialog_reaction.show(reaction);
+        $(this.table_element).find("tbody").on("click", ".wedesign_table_compartment", function() {
+            // Open compartment dialog
+            const tr = $(this).closest("tr");
+            const row = self.datatable.row(tr);
+            app.dialog_compartment.show(<mm.Compartment>self.app.model.compartment.checked_get(
+                "id", (<mm.Metabolite>row.data()).compartment));
         });
 
-        // 4th column: External checkbox
-        $(this.table_element).delegate('tr td:nth-child(5) input', 'change', function() {
-            let row = self.datatable.row($(this).closest("tr"));
+        // Enzyme in consumed or produced clicked
+        $(this.table_element).on("click", ".cyano-enzyme", function(event) {
+            const row = self.datatable.row($(this).closest("tr"));
+            const target_list: mm.Reaction[] = this.parentElement.className.indexOf("consumed") != -1 ?
+                (<mm.Metabolite>row.data()).consumed : (<mm.Metabolite>row.data()).produced;
+            const idx = Array.prototype.indexOf.call(this.parentElement.children, this);
+            app.dialog_reaction.show(target_list[idx]);
+        });
+
+        // External checkbox
+        $(this.table_element).on("change", ".wedesign_external_checkbox", function() {
+            const row = self.datatable.row($(this).closest("tr"));
             let metabolite = (<mm.Metabolite>row.data());
 
             metabolite.compartment = $(this).is(":checked") ? "e" : "c";

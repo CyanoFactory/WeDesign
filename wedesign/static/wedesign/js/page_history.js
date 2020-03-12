@@ -33,6 +33,7 @@ If you want to work on different forks of the model use the "Save as" button to 
             const groupColumn = 5;
             this.datatable = $(this.table_element).DataTable({
                 "deferRender": true,
+                "autoWidth": false,
                 columns: [
                     {},
                     {},

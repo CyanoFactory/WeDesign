@@ -132,6 +132,7 @@ export class Page {
 
         this.datatable_flux = $(this.table_element_flux).DataTable(<any>{
             "deferRender": true,
+            "autoWidth": false,
             "displayLength": 25,
             "order": [[ 1, 'desc' ]],
             "language": {

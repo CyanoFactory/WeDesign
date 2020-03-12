@@ -12,6 +12,7 @@ define(["require", "exports", "jquery", "datatables.net"], function (require, ex
 <table class="cyano-reaction-list table table-striped table-hover">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Name</th>
             <th>Reaction</th>
             <th>Constraint</th>
@@ -42,6 +43,16 @@ Create new metabolite
     let template_filter = document.createElement('template');
     template_filter.innerHTML = `
 <div class="col-sm-6">
+<label for="column-visibility-filter">Visible columns</label>
+<select class="column-visibility-filter form-control combobox" multiple="multiple">
+    <option value="id">ID</option>
+    <option selected="selected">Name</option>
+    <option selected="selected">Reaction</option>
+    <option selected="selected">Constraints</option>
+    <option selected="selected">Flux</option>
+    <option selected="selected">Active</option>
+    <option selected="selected">Delete</option>
+</select>
 <label for="cyano-list-filter">Filter reactions</label>
 <select class="cyano-list-filter form-control combobox" multiple="multiple">
     <optgroup label="Enabled">
@@ -76,6 +87,7 @@ Create new metabolite
             this.app = app;
             this.datatable = $(this.table_element).DataTable({
                 "deferRender": true,
+                "autoWidth": false,
                 columns: [
                     {},
                     {},
@@ -88,8 +100,18 @@ Create new metabolite
                 ],
                 columnDefs: [
                     {
+                        "className": "wedesign_table_id",
                         "targets": 0,
-                        "width": "25%",
+                        "width": "20%",
+                        "visible": false,
+                        "data": function (rowData) {
+                            return rowData.id;
+                        }
+                    },
+                    {
+                        "className": "wedesign_table_name",
+                        "targets": 1,
+                        "width": "20%",
                         "data": function (rowData) {
                             return rowData;
                         },
@@ -98,12 +120,13 @@ Create new metabolite
                             if (!data.enabled) {
                                 e.addClass("cyano-enzyme-disabled");
                             }
-                            return e.text(data.name).wrap("<p>").parent().html();
+                            return e.text(data.get_name_or_id()).wrap("<p>").parent().html();
                         }
                     },
                     {
-                        "targets": 1,
-                        "width": "45%",
+                        "className": "wedesign_table_reactions",
+                        "targets": 2,
+                        "width": "100%",
                         "orderable": false,
                         "data": function (rowData) {
                             return rowData;
@@ -113,18 +136,19 @@ Create new metabolite
                         }
                     },
                     {
-                        "targets": 2,
-                        "width": "10%",
-                        "orderable": false,
+                        "className": "wedesign_table_constraints",
+                        "targets": 3,
+                        "width": "0%",
+                        "orderable": true,
                         "searchable": false,
                         "data": function (rowData) {
                             return rowData.constraintsToString(self.app.model);
                         }
                     },
                     {
-                        "targets": 3,
-                        "width": "10%",
-                        "orderable": false,
+                        "className": "wedesign_table_flux",
+                        "targets": 4,
+                        "width": "0%",
                         "searchable": false,
                         "data": function (rowData) {
                             if (rowData.id in self.flux) {
@@ -134,8 +158,8 @@ Create new metabolite
                         }
                     },
                     {
-                        "targets": 4,
-                        "width": "12%",
+                        "className": "wedesign_table_enabled",
+                        "targets": 5,
                         "orderable": false,
                         "searchable": false,
                         "data": function (rowData) {
@@ -146,14 +170,15 @@ Create new metabolite
                                 return data === true ? "Enabled" : "Disabled";
                             }
                             return "<div class='checkbox'> \
-                        <input type='checkbox' id='enabled" + meta.row + "' " + (data ? "checked='checked'" : "") + "> \
+                        <input type='checkbox' class='enabled-button' id='enabled" + meta.row + "' " + (data ? "checked='checked'" : "") + "> \
                         <label for='enabled" + meta.row + "'>Enabled</label> \
                         </div>";
                         }
                     },
                     {
-                        "targets": 5,
-                        "width": "8%",
+                        "className": "wedesign_table_delete",
+                        "targets": 6,
+                        "width": "0%",
                         "orderable": false,
                         "searchable": false,
                         "data": function (rowData, type, set, meta) {
@@ -164,20 +189,13 @@ Create new metabolite
                         }
                     },
                     {
-                        "targets": 6,
+                        "className": "wedesign_table_pathway",
+                        "targets": 7,
                         "visible": false,
                         "orderable": true,
                         "data": function (rowData, type, set, meta) {
                             return "No Pathway";
                             // FIXME return rowData.pathway.length == 0 ? "No Pathway" : rowData.pathway;
-                        }
-                    },
-                    {
-                        "targets": 7,
-                        "visible": false,
-                        "orderable": true,
-                        "data": function (rowData) {
-                            return rowData.id;
                         }
                     }
                 ],
@@ -273,6 +291,25 @@ Create new metabolite
                     }
                 }
             });
+            $(where.getElementsByClassName("column-visibility-filter")[0]).multiselect({
+                buttonClass: 'btn btn-default btn-xs',
+                onChange: function (option, checked, select) {
+                    for (const opt of option) {
+                        self.datatable.column(opt.index).visible(checked);
+                    }
+                },
+                buttonText: function (options, select) {
+                    if (options.length === 0) {
+                        return 'None';
+                    }
+                    else if (options.length === 7) {
+                        return 'All';
+                    }
+                    else {
+                        return `Some (${options.length})`;
+                    }
+                }
+            });
             // Order by the grouping
             /*table_enzymes.delegate('tr.group', 'click', function() {
                 var currentOrder = datatable_enzymes.order()[0];
@@ -310,22 +347,22 @@ Create new metabolite
                 self.datatable.search(self.datatable.search(), $(this).prop("checked"), true).draw();
             });
             /* Event handler */
-            $(this.table_element).delegate('tr td:first-child', 'click', function () {
-                // Reaction in 1st column was clicked
-                let tr = $(this).closest("tr");
+            $(this.table_element).find("tbody").on("click", ".wedesign_table_id,.wedesign_table_name", function () {
+                // Open edit dialog when ID or Name are clicked
+                const tr = $(this).closest("tr");
                 if (tr.hasClass("group")) {
                     return;
                 }
-                let row = self.datatable.row(tr);
+                const row = self.datatable.row(tr);
                 self.app.dialog_reaction.show(row.data());
             });
+            // Any Metabolite was clicked
             $(this.table_element).on("click", ".cyano-metabolite", function (event) {
-                // Any Metabolite in 2nd column was clicked
                 const met = self.app.model.metabolite.checked_get("id", this.dataset.id);
                 self.app.dialog_metabolite.show(met);
             });
-            // Enabled in 5th col
-            $(this.table_element).delegate('tr td:nth-child(5) input', 'change', function () {
+            // Enabled checkbox
+            $(this.table_element).on("change", ".enabled-button", function () {
                 let row = self.datatable.row($(this).closest("tr"));
                 let reaction = row.data();
                 reaction.enabled = ($(this).is(":checked"));
@@ -341,7 +378,7 @@ Create new metabolite
                 self.invalidate(reaction);
                 self.app.history_page.refresh();
             });
-            // 5th col: delete button clicked
+            // delete button clicked
             $(this.table_element).on("click", ".delete-button", function () {
                 let row = self.datatable.row($(this).closest("tr"));
                 let reaction = row.data();

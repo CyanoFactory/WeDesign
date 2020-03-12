@@ -104,6 +104,7 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
             this.app = app;
             this.datatable_flux = $(this.table_element_flux).DataTable({
                 "deferRender": true,
+                "autoWidth": false,
                 "displayLength": 25,
                 "order": [[1, 'desc']],
                 "language": {
