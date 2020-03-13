@@ -18,6 +18,7 @@ define(["require", "exports", "jquery", "datatables.net"], function (require, ex
             <th>Consumed by</th>
             <th>Produced by</th>
             <th>Is External</th>
+            <th>Chemical Formula</th>
         </tr>
     </thead>
 </table>
@@ -43,6 +44,7 @@ Delete unused metabolites
     <option selected="selected">Consumed by</option>
     <option selected="selected">Produced by</option>
     <option selected="selected">Is External</option>
+    <option>Chemical Formula</option>
 </select>
 <label for="cyano-list-filter">Filter metabolites</label>
 <select class="cyano-list-filter form-control combobox" multiple="multiple">
@@ -70,6 +72,7 @@ Delete unused metabolites
                 "deferRender": true,
                 "autoWidth": false,
                 columns: [
+                    {},
                     {},
                     {},
                     {},
@@ -152,7 +155,15 @@ Delete unused metabolites
                         <label for='external" + meta.row + "'>External</label> \
                         </div>";
                         }
-                    }
+                    },
+                    {
+                        "className": "wedesign_table_chemical",
+                        "targets": 6,
+                        "visible": false,
+                        "data": function (rowData, type, set, meta) {
+                            return rowData.formula;
+                        }
+                    },
                 ],
                 "displayLength": 25,
                 dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
@@ -216,7 +227,7 @@ Delete unused metabolites
                     if (options.length === 0) {
                         return 'None';
                     }
-                    else if (options.length === 6) {
+                    else if (options.length === 7) {
                         return 'All';
                     }
                     else {

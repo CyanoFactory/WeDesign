@@ -21,6 +21,7 @@ template.innerHTML = `
             <th>Consumed by</th>
             <th>Produced by</th>
             <th>Is External</th>
+            <th>Chemical Formula</th>
         </tr>
     </thead>
 </table>
@@ -47,6 +48,7 @@ template_filter.innerHTML = `
     <option selected="selected">Consumed by</option>
     <option selected="selected">Produced by</option>
     <option selected="selected">Is External</option>
+    <option>Chemical Formula</option>
 </select>
 <label for="cyano-list-filter">Filter metabolites</label>
 <select class="cyano-list-filter form-control combobox" multiple="multiple">
@@ -82,6 +84,7 @@ export class Page {
             "deferRender": true,
             "autoWidth": false,
             columns: [
+                    {},
                     {},
                     {},
                     {},
@@ -165,7 +168,15 @@ export class Page {
                         <label for='external"  + meta.row + "'>External</label> \
                         </div>";
                     }
-                }
+                },
+                {
+                    "className": "wedesign_table_chemical",
+                    "targets": 6,
+                    "visible": false,
+                    "data": function (rowData, type, set, meta) {
+                        return rowData.formula;
+                    }
+                },
             ],
             "displayLength": 25,
             dom:
@@ -233,7 +244,7 @@ export class Page {
             buttonText: function(options: HTMLOptionElement[], select) {
                 if (options.length === 0) {
                     return 'None';
-                } else if (options.length === 6) {
+                } else if (options.length === 7) {
                     return 'All';
                 } else {
                     return `Some (${options.length})`;
