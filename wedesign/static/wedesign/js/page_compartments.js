@@ -4,7 +4,7 @@ Hochschule Mittweida, University of Applied Sciences
 
 Released under the MIT license
 */
-define(["require", "exports", "jquery", "datatables.net"], function (require, exports, $) {
+define(["require", "exports", "jquery", "./design_utils", "datatables.net"], function (require, exports, $, design_utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let template = document.createElement('template');
@@ -34,10 +34,10 @@ Create new compartment
 <div class="col-sm-6">
 <label for="column-visibility-filter">Visible columns</label>
 <select class="column-visibility-filter form-control combobox" multiple="multiple">
-    <option selected="selected">ID</option>
-    <option selected="selected">Name</option>
-    <option selected="selected">Members</option>
-    <option selected="selected">Type</option>
+    <option>ID</option>
+    <option>Name</option>
+    <option>Members</option>
+    <option>Type</option>
 </select>
 `;
     class Page {
@@ -48,9 +48,7 @@ Create new compartment
             this.table_element = where.getElementsByClassName("cyano-compartment-list")[0];
             this.app = app;
             const self = this;
-            this.datatable = $(this.table_element).DataTable({
-                "deferRender": true,
-                "autoWidth": false,
+            this.datatable = design_utils_1.DesignUtils.configureDatatable(this.table_element, {
                 columns: [
                     {},
                     {},
@@ -143,25 +141,7 @@ Create new compartment
             });
             /* Filter */
             where.children[0].children[1].appendChild(template_filter.content.cloneNode(true));
-            $(where.getElementsByClassName("column-visibility-filter")[0]).multiselect({
-                buttonClass: 'btn btn-default btn-xs',
-                onChange: function (option, checked, select) {
-                    for (const opt of option) {
-                        self.datatable.column(opt.index).visible(checked);
-                    }
-                },
-                buttonText: function (options, select) {
-                    if (options.length === 0) {
-                        return 'None';
-                    }
-                    else if (options.length === 4) {
-                        return 'All';
-                    }
-                    else {
-                        return `Some (${options.length})`;
-                    }
-                }
-            });
+            design_utils_1.DesignUtils.registerVisibilityFilter(where, this.datatable);
         }
         init() {
             this.datatable.clear();

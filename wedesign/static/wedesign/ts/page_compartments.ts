@@ -9,6 +9,7 @@ import * as app from "./app"
 import * as mm from "./metabolic_model";
 import * as $ from "jquery";
 import "datatables.net";
+import {DesignUtils} from "./design_utils";
 
 let template = document.createElement('template');
 template.innerHTML = `
@@ -38,10 +39,10 @@ template_filter.innerHTML = `
 <div class="col-sm-6">
 <label for="column-visibility-filter">Visible columns</label>
 <select class="column-visibility-filter form-control combobox" multiple="multiple">
-    <option selected="selected">ID</option>
-    <option selected="selected">Name</option>
-    <option selected="selected">Members</option>
-    <option selected="selected">Type</option>
+    <option>ID</option>
+    <option>Name</option>
+    <option>Members</option>
+    <option>Type</option>
 </select>
 `;
 
@@ -61,9 +62,7 @@ export class Page {
 
         const self: Page = this;
 
-        this.datatable = $(this.table_element).DataTable(<any>{
-            "deferRender": true,
-            "autoWidth": false,
+        this.datatable = DesignUtils.configureDatatable(this.table_element, {
             columns: [
                     {},
                     {},
@@ -165,23 +164,7 @@ export class Page {
         /* Filter */
         where.children[0].children[1].appendChild(template_filter.content.cloneNode(true));
 
-        (<any>$(where.getElementsByClassName("column-visibility-filter")[0])).multiselect({
-            buttonClass: 'btn btn-default btn-xs',
-            onChange: function(option, checked, select) {
-                for (const opt of option) {
-                    self.datatable.column(opt.index).visible(checked);
-                }
-            },
-            buttonText: function(options: HTMLOptionElement[], select) {
-                if (options.length === 0) {
-                    return 'None';
-                } else if (options.length === 4) {
-                    return 'All';
-                } else {
-                    return `Some (${options.length})`;
-                }
-            }
-        });
+        DesignUtils.registerVisibilityFilter(where, this.datatable);
     }
 
     init() {

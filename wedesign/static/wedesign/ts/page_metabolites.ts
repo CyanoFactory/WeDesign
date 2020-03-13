@@ -9,6 +9,7 @@ import * as app from "./app"
 import * as mm from "./metabolic_model";
 import * as $ from "jquery";
 import "datatables.net";
+import {DesignUtils} from "./design_utils";
 
 let template = document.createElement('template');
 template.innerHTML = `
@@ -43,11 +44,11 @@ template_filter.innerHTML = `
 <label for="column-visibility-filter">Visible columns</label>
 <select class="column-visibility-filter form-control combobox" multiple="multiple">
     <option>ID</option>
-    <option selected="selected">Name</option>
-    <option selected="selected">Compartment</option>
-    <option selected="selected">Consumed by</option>
-    <option selected="selected">Produced by</option>
-    <option selected="selected">Is External</option>
+    <option>Name</option>
+    <option>Compartment</option>
+    <option>Consumed by</option>
+    <option>Produced by</option>
+    <option>Is External</option>
     <option>Chemical Formula</option>
 </select>
 <label for="cyano-list-filter">Filter metabolites</label>
@@ -80,9 +81,7 @@ export class Page {
         this.table_element = <HTMLElement>where.getElementsByClassName("cyano-metabolite-list")[0]!;
         this.app = app;
 
-        this.datatable = $(this.table_element).DataTable(<any>{
-            "deferRender": true,
-            "autoWidth": false,
+        this.datatable = DesignUtils.configureDatatable(this.table_element, {
             columns: [
                     {},
                     {},
@@ -234,23 +233,7 @@ export class Page {
             }
         });
 
-        (<any>$(where.getElementsByClassName("column-visibility-filter")[0])).multiselect({
-            buttonClass: 'btn btn-default btn-xs',
-            onChange: function(option, checked, select) {
-                for (const opt of option) {
-                    self.datatable.column(opt.index).visible(checked);
-                }
-            },
-            buttonText: function(options: HTMLOptionElement[], select) {
-                if (options.length === 0) {
-                    return 'None';
-                } else if (options.length === 7) {
-                    return 'All';
-                } else {
-                    return `Some (${options.length})`;
-                }
-            }
-        });
+        DesignUtils.registerVisibilityFilter(where, this.datatable);
 
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {

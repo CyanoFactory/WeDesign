@@ -142,7 +142,7 @@ define(["require", "exports", "./metabolic_model", "jquery"], function (require,
                         break;
                     }
                     if (this.current_id == this.history[i].group.id) {
-                        console.log("Undo: " + this.history[i]);
+                        //console.log("Undo: " + this.history[i]);
                         this.apply(i);
                     }
                 }
@@ -181,7 +181,7 @@ define(["require", "exports", "./metabolic_model", "jquery"], function (require,
                     if (!this.history[i].undo) {
                         this.history[i].undo = true;
                         if (this.current_id == this.history[i].group.id) {
-                            console.log("Redo: " + this.history[i]);
+                            //console.log("Redo: " + this.history[i]);
                             this.apply(i);
                         }
                     }

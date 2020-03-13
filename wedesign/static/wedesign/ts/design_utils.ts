@@ -5,6 +5,8 @@ Hochschule Mittweida, University of Applied Sciences
 Released under the MIT license
 */
 
+import * as $ from "jquery";
+
 export namespace DesignUtils {
     export function downloadSVG(svg_element: Node, filename: string): void {
         const s = new XMLSerializer().serializeToString(svg_element);
@@ -51,6 +53,47 @@ export namespace DesignUtils {
         };
         const svgAsXML = (new XMLSerializer).serializeToString(svg_element);
         loader.src = 'data:image/svg+xml,' + encodeURIComponent(svgAsXML);
+    }
+
+    export function registerVisibilityFilter(where: HTMLElement, datatable: DataTables.Api) {
+        const visibility_filter = where.getElementsByClassName("column-visibility-filter")[0];
+        for (let i = 0; i < visibility_filter.childElementCount; ++i) {
+            (<HTMLOptionElement>visibility_filter.children[i]).selected = datatable.column(i).visible();
+        }
+
+        ((<any>$(visibility_filter)).multiselect({
+            buttonClass: 'btn btn-default btn-xs',
+            onChange: function(option, checked, select) {
+                for (const opt of option) {
+                    datatable.column(opt.index).visible(checked);
+                }
+            },
+            buttonText: function(options: HTMLOptionElement[], select) {
+                if (options.length == 0) {
+                    return 'None';
+                } else if (options.length == visibility_filter.childElementCount) {
+                    return 'All';
+                } else {
+                    return `Some (${options.length})`;
+                }
+            }
+        }));
+    }
+
+    export function configureDatatable(datatable_html: HTMLElement, options: any): DataTables.Api {
+        const common = {
+            deferRender: true,
+            autoWidth: false,
+            stateSave: true,
+            stateSaveCallback: function(settings,data) {
+                localStorage.setItem('DataTables_' + settings.nTable.classList[0], JSON.stringify(data))
+            },
+            stateLoadCallback: function(settings) {
+                return JSON.parse(localStorage.getItem('DataTables_' + settings.nTable.classList[0]))
+            },
+        };
+
+        return $(datatable_html).DataTable(Object.assign(options, common));
     }
 }
 

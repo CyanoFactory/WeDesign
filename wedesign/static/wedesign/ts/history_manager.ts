@@ -182,7 +182,7 @@ export class HistoryManager {
                 }
 
                 if (this.current_id == this.history[i].group.id) {
-                    console.log("Undo: " + this.history[i]);
+                    //console.log("Undo: " + this.history[i]);
                     this.apply(i);
                 }
             }
@@ -229,7 +229,7 @@ export class HistoryManager {
                     this.history[i].undo = true;
 
                     if (this.current_id == this.history[i].group.id) {
-                        console.log("Redo: " + this.history[i]);
+                        //console.log("Redo: " + this.history[i]);
                         this.apply(i);
                     }
                 }

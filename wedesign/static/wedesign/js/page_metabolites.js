@@ -4,7 +4,7 @@ Hochschule Mittweida, University of Applied Sciences
 
 Released under the MIT license
 */
-define(["require", "exports", "jquery", "datatables.net"], function (require, exports, $) {
+define(["require", "exports", "jquery", "./design_utils", "datatables.net"], function (require, exports, $, design_utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let template = document.createElement('template');
@@ -39,11 +39,11 @@ Delete unused metabolites
 <label for="column-visibility-filter">Visible columns</label>
 <select class="column-visibility-filter form-control combobox" multiple="multiple">
     <option>ID</option>
-    <option selected="selected">Name</option>
-    <option selected="selected">Compartment</option>
-    <option selected="selected">Consumed by</option>
-    <option selected="selected">Produced by</option>
-    <option selected="selected">Is External</option>
+    <option>Name</option>
+    <option>Compartment</option>
+    <option>Consumed by</option>
+    <option>Produced by</option>
+    <option>Is External</option>
     <option>Chemical Formula</option>
 </select>
 <label for="cyano-list-filter">Filter metabolites</label>
@@ -68,9 +68,7 @@ Delete unused metabolites
             where.appendChild(template.content.cloneNode(true));
             this.table_element = where.getElementsByClassName("cyano-metabolite-list")[0];
             this.app = app;
-            this.datatable = $(this.table_element).DataTable({
-                "deferRender": true,
-                "autoWidth": false,
+            this.datatable = design_utils_1.DesignUtils.configureDatatable(this.table_element, {
                 columns: [
                     {},
                     {},
@@ -216,25 +214,7 @@ Delete unused metabolites
                     }
                 }
             });
-            $(where.getElementsByClassName("column-visibility-filter")[0]).multiselect({
-                buttonClass: 'btn btn-default btn-xs',
-                onChange: function (option, checked, select) {
-                    for (const opt of option) {
-                        self.datatable.column(opt.index).visible(checked);
-                    }
-                },
-                buttonText: function (options, select) {
-                    if (options.length === 0) {
-                        return 'None';
-                    }
-                    else if (options.length === 7) {
-                        return 'All';
-                    }
-                    else {
-                        return `Some (${options.length})`;
-                    }
-                }
-            });
+            design_utils_1.DesignUtils.registerVisibilityFilter(where, this.datatable);
             $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
                 if (settings.nTable == self.table_element) {
                     const arr = $(where).find(".cyano-list-filter").find("option").map(function () {

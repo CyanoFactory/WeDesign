@@ -315,8 +315,8 @@ define(["require", "exports", "./metabolic_model", "./dialog_helper", "jquery", 
                     fn(reac, design_obj_selectize);
                     fn(reac, target_obj_selectize);
                 }
+                this.test_no_obj();
             }
-            this.test_no_obj();
         }
         test_no_obj() {
             if (this.main_obj.element.selectize.getValue() == "") {

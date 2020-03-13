@@ -358,9 +358,9 @@ export class Page {
                 fn(reac, design_obj_selectize);
                 fn(reac, target_obj_selectize);
             }
-        }
 
-        this.test_no_obj();
+            this.test_no_obj();
+        }
     }
 
     private test_no_obj(): void {

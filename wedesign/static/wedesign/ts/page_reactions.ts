@@ -9,6 +9,7 @@ import * as app from "./app"
 import * as mm from "./metabolic_model";
 import * as $ from "jquery";
 import "datatables.net";
+import {DesignUtils} from "./design_utils";
 
 let template = document.createElement('template');
 template.innerHTML = `
@@ -50,12 +51,12 @@ template_filter.innerHTML = `
 <label for="column-visibility-filter">Visible columns</label>
 <select class="column-visibility-filter form-control combobox" multiple="multiple">
     <option value="id">ID</option>
-    <option selected="selected">Name</option>
-    <option selected="selected">Reaction</option>
-    <option selected="selected">Constraints</option>
-    <option selected="selected">Flux</option>
-    <option selected="selected">Active</option>
-    <option selected="selected">Delete</option>
+    <option>Name</option>
+    <option>Reaction</option>
+    <option>Constraints</option>
+    <option>Flux</option>
+    <option>Active</option>
+    <option>Delete</option>
 </select>
 <label for="cyano-list-filter">Filter reactions</label>
 <select class="cyano-list-filter form-control combobox" multiple="multiple">
@@ -99,9 +100,7 @@ export class Page {
         this.table_element = <HTMLElement>where.getElementsByClassName("cyano-reaction-list")[0]!;
         this.app = app;
 
-        this.datatable = $(this.table_element).DataTable(<any>{
-            "deferRender": true,
-            "autoWidth": false,
+        this.datatable = DesignUtils.configureDatatable(this.table_element, {
             columns: [
                     {},
                     {},
@@ -320,23 +319,7 @@ export class Page {
             }
         });
 
-        (<any>$(where.getElementsByClassName("column-visibility-filter")[0])).multiselect({
-            buttonClass: 'btn btn-default btn-xs',
-            onChange: function(option, checked, select) {
-                for (const opt of option) {
-                    self.datatable.column(opt.index).visible(checked);
-                }
-            },
-            buttonText: function(options: HTMLOptionElement[], select) {
-                if (options.length === 0) {
-                    return 'None';
-                } else if (options.length === 7) {
-                    return 'All';
-                } else {
-                    return `Some (${options.length})`;
-                }
-            }
-        });
+        DesignUtils.registerVisibilityFilter(where, this.datatable);
 
         // Order by the grouping
         /*table_enzymes.delegate('tr.group', 'click', function() {
