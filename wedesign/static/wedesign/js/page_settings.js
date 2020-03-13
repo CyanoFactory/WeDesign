@@ -242,6 +242,7 @@ define(["require", "exports", "./metabolic_model", "./dialog_helper", "jquery", 
             };
             if (this.once) {
                 this.main_obj.element.selectize.on('change', function () {
+                    self.test_no_obj();
                     obj_to_model("obj", this.getValue(), true);
                 });
                 this.design_obj.element.selectize.on('change', function () {
@@ -314,6 +315,12 @@ define(["require", "exports", "./metabolic_model", "./dialog_helper", "jquery", 
                     fn(reac, design_obj_selectize);
                     fn(reac, target_obj_selectize);
                 }
+            }
+            this.test_no_obj();
+        }
+        test_no_obj() {
+            if (this.main_obj.element.selectize.getValue() == "") {
+                this.app.simulation_page.notifyWarning("No objective selected. Choose the \"Main objective\" in the \"Settings\" to start a simulation.");
             }
         }
         getObjective() {

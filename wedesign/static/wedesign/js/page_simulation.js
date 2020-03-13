@@ -249,13 +249,16 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
         }
         notifyWarning(text) {
             document.getElementById("wedesign-notify-box").innerHTML = '<div class="alert alert-warning" role="alert">\
-            <span class="sr-only">Info:</span>' + text + '</div>';
+            <span class="sr-only">Warning:</span>' + text + '</div>';
         }
         notifyError(text) {
             document.getElementById("wedesign-notify-box").innerHTML = '<div class="alert alert-danger" role="alert">\
             <span class="sr-only">Error:</span>' + text + '</div>';
         }
         simulate() {
+            if (this.app.settings_page.getObjective() == "") {
+                return;
+            }
             let symtype = this.app.settings_page.getSimulationType();
             this.last_sim_type = symtype;
             this.last_sim_objective = this.app.model.reaction.get("id", this.app.settings_page.getObjective());

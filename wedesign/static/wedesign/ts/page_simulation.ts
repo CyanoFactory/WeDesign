@@ -310,7 +310,7 @@ export class Page {
 
     notifyWarning(text: string) {
         document.getElementById("wedesign-notify-box").innerHTML = '<div class="alert alert-warning" role="alert">\
-            <span class="sr-only">Info:</span>' + text + '</div>';
+            <span class="sr-only">Warning:</span>' + text + '</div>';
     }
 
     notifyError(text: string) {
@@ -319,6 +319,10 @@ export class Page {
     }
 
     simulate() {
+        if (this.app.settings_page.getObjective() == "") {
+            return;
+        }
+
         let symtype = this.app.settings_page.getSimulationType();
         this.last_sim_type = symtype;
         this.last_sim_objective = this.app.model.reaction.get("id", this.app.settings_page.getObjective());
