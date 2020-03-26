@@ -180,9 +180,23 @@ export class Page {
         });
 
         $(this.export_button_graph).find(".export-svg").click(
-            () => DesignUtils.downloadSVG(this.visual_fba_element.children[0], "graph.svg"));
+            () => {
+                const svg_g = $(self.visual_fba_element).find("svg > g");
+                const transform = svg_g.attr("transform");
+                const style = svg_g.attr("style");
+                svg_g.attr("transform", "").attr("style", "");
+                DesignUtils.downloadSVG(this.visual_fba_element.children[0], "graph.svg");
+                svg_g.attr("transform", transform).attr("style", style);
+            });
         $(this.export_button_graph).find(".export-png").click(
-            () => DesignUtils.downloadPNG(this.visual_fba_element.children[0], "graph.png"));
+            () => {
+                const svg_g = $(self.visual_fba_element).find("svg > g");
+                const transform = svg_g.attr("transform");
+                const style = svg_g.attr("style");
+                svg_g.attr("transform", "").attr("style", "");
+                DesignUtils.downloadPNG(this.visual_fba_element.children[0], "graph.png");
+                svg_g.attr("transform", transform).attr("style", style);
+            });
         $(this.export_button_graph).find(".export-dot").click(
             () => DesignUtils.downloadText(this.last_dot_graph, "graph.dot"));
         $(this.export_button_chart).find(".export-svg").click(
@@ -330,9 +344,19 @@ export class Page {
                 this.visual_fba_element.innerHTML = "";
                 this.visual_fba_element.appendChild(graph);
 
-                $(this.visual_fba_element).attr("width", "100%").attr("height", "400px");
+                $(this.visual_fba_element).attr("width", "100%").attr("height", "500px");
+
+                const svg_elem = $(this.visual_fba_element).children("svg");
+                if (Number.parseInt(svg_elem.attr("height")) > 500) {
+                    svg_elem.attr("height", "500pt");
+                }
+                if (Number.parseInt(svg_elem.attr("width")) > 1000) {
+                    svg_elem.attr("width", "1000pt");
+                }
+
                 let svgPan: any = svgPanZoom('.visual-fba > svg', {minZoom: 0.1, fit: false});
-                svgPan.zoom(1);
+                svgPan.fit();
+                svgPan.center();
             });
 
             $(this.visual_graph_element).hide();
@@ -465,13 +489,22 @@ export class Page {
                     this.visual_fba_element.appendChild(graph);
 
                     $(this.visual_fba_element).attr("width", "100%").attr("height", "400px");
+
+                    const svg_elem = $(this.visual_fba_element).children("svg");
+                    if (Number.parseInt(svg_elem.attr("height")) > 500) {
+                        svg_elem.attr("height", "500pt");
+                    }
+                    if (Number.parseInt(svg_elem.attr("width")) > 1000) {
+                        svg_elem.attr("width", "1000pt");
+                    }
+
                     let svgPan: any = svgPanZoom('.visual-fba > svg', {minZoom: 0.1, fit: false});
-                    svgPan.zoom(1);
+                    svgPan.fit();
+                    svgPan.center();
                 });
 
                 $(this.visual_fba_element).show();
                 $(this.export_button_graph).show();
-                this.visual_fba_element.innerHTML = graph;
 
                 this.datatable_flux.clear();
 
@@ -629,8 +662,18 @@ export class Page {
                     this.visual_fba_element.appendChild(graph);
 
                     $(this.visual_fba_element).attr("width", "100%").attr("height", "400px");
+
+                    const svg_elem = $(this.visual_fba_element).children("svg");
+                    if (Number.parseInt(svg_elem.attr("height")) > 500) {
+                        svg_elem.attr("height", "500pt");
+                    }
+                    if (Number.parseInt(svg_elem.attr("width")) > 1000) {
+                        svg_elem.attr("width", "1000pt");
+                    }
+
                     let svgPan: any = svgPanZoom('.visual-fba > svg', {minZoom: 0.1, fit: false});
-                    svgPan.zoom(1);
+                    svgPan.fit();
+                    svgPan.center();
                 });
 
                 $(this.visual_fba_element).show();
