@@ -21,7 +21,8 @@ define(["require", "exports", "./metabolic_model", "jquery", "./metabolic_model"
             <div class="modal-body">
                 <form>
                     <fieldset>
-                        Enter reactions in BioOpt format for adding them to the model. Constraints can be put after the reactions.<br>
+                        Enter reactions in BioOpt format for adding them to the model. Constraints can be put after the reactions.
+                        <br>Example: reac1: a + 2 b -> 3.5 c [-1, 1]<br>
                         <div class="form-group">
                             <label class="control-label" for="bulkdata">BioOpt data:</label>
                             <textarea class="bulkdata form-control" placeholder="reac1: a + 2 b -> 3.5 c [-1, 1]" rows="5"></textarea>
