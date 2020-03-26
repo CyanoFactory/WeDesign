@@ -196,39 +196,32 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
             where.getElementsByClassName("cyano-regex")[0].addEventListener("click", function () {
                 self.datatable_flux.search(self.datatable_flux.search(), $(this).prop("checked"), true).draw();
             });
-            /*
-                    FIXME$("#visual_fba").on("click", "g.node", function() {
-                        var idx = Metabolite.indexByName($(this).children("text").text());
-                        if (!isDragging & idx > -1) {
-                            showEditMetaboliteDialog(model.metabolites[idx]);
-                        }
-                    });
-            
-                    $("#visual_fba").on("click", "g.edge text", function() {
-                        // remove flux value
-                        var idx = Enzyme.indexByName($(this).text().replace(/ \(-?[0-9]+(\.[0-9]+)?\)$/, ""));
-                        if (!isDragging & idx > -1) {
-                            showEditEnzymeDialog(model.reactions[idx], false);
-                        }
-                    });
-            
-                    $("#visual_fba").on("mousedown", "g", function(event) {
-                        isDragging = false;
-                        $(this).data('page', {x: event.pageX, y: event.pageY})
-                    });
-                    $("#visual_fba").on("mousemove", "g", function(event) {
-                        var p = $(this).data('page');
-                        if (p !== undefined) {
-                            if (Math.abs(p.x - event.pageX) > 4 ||
-                                Math.abs(p.y - event.pageY) > 4) {
-                                isDragging = true;
-                            }
-                        }
-                    });
-            
-                    $("#filter-flux-min").change(function() { datatable_flux.draw(); });
-                    $("#filter-flux-max").change(function() { datatable_flux.draw(); });
-            */
+            $(this.visual_fba_element).on("click", "g.node", function () {
+                const met = self.app.model.metabolite.checked_get("id", $(this).children("title").text());
+                if (!self.is_dragging) {
+                    self.app.dialog_metabolite.show(met);
+                }
+            });
+            $(this.visual_fba_element).on("click", "g.edge text", function () {
+                // remove flux value
+                const reac = self.app.model.reaction.checked_get("name", $(this).text().replace(/ \(-?[0-9]+(\.[0-9]+)?\)$/, ""));
+                if (!self.is_dragging) {
+                    self.app.dialog_reaction.show(reac);
+                }
+            });
+            $(this.visual_fba_element).on("mousedown", "g", function (event) {
+                self.is_dragging = false;
+                $(this).data('page', { x: event.pageX, y: event.pageY });
+            });
+            $(this.visual_fba_element).on("mousemove", "g", function (event) {
+                const p = $(this).data('page');
+                if (p !== undefined) {
+                    if (Math.abs(p.x - event.pageX) > 4 ||
+                        Math.abs(p.y - event.pageY) > 4) {
+                        self.is_dragging = true;
+                    }
+                }
+            });
         }
         init() {
         }
@@ -673,10 +666,8 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
                             flux: f.toFixed(2),
                             color: f < 0.0 ? "red" : f > 0.0 ? "green" : "black",
                             penwidth: (flux_norm - 1.0 < 1.0) ? 1 : flux_norm,
-                            lname: s.id,
-                            left: this.app.model.metabolite.index("id", s.id),
-                            rname: p.id,
-                            right: this.app.model.metabolite.index("id", p.id),
+                            left: s.id,
+                            right: p.id,
                             reverse: reac.reversible,
                             style: reac.id == obj ? "dashed" : "solid",
                             visited: false,
@@ -734,8 +725,8 @@ define(["require", "exports", "jquery", "./design_utils", "datatables.net"], fun
                                 continue;
                             }
                             ++visit_count;
-                            edge_visit_dict[e.lname] = e.left;
-                            edge_visit_dict[e.rname] = e.right;
+                            edge_visit_dict[e.left] = e.left;
+                            edge_visit_dict[e.right] = e.right;
                             node_queue.unshift(e);
                         }
                     }
