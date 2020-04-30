@@ -15,7 +15,7 @@
     "datatables.net-buttons": "^1.6.1",
     "datatables.net-buttons-bs": "^1.6.1",
     "glpk.js": "^3.0.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "requirejs": "^2.3.6",
     "selectize": "^0.12.6",
     "svg-pan-zoom": "^3.6.1"
